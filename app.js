@@ -91,7 +91,124 @@ function render() {
 }
 
 function renderDashboard() {}
-function renderPlanner() {}
+
+// ---------------------------------------------------------------------------
+// Planner: collapsible weeks, one course card per week
+// ---------------------------------------------------------------------------
+function renderPlanner() {
+  const sem = state.semester;
+  const root = document.getElementById('planner');
+  root.innerHTML = '';
+  const cw = currentWeek(sem);
+
+  for (let week = 1; week <= sem.weeks; week++) {
+    const isOpen = state.openWeeks.has(week);
+    const start = weekStart(sem.startDate, week);
+    const end = weekStart(sem.startDate, week);
+    end.setDate(end.getDate() + 6);
+
+    const weekEl = document.createElement('div');
+    weekEl.className = 'week' + (isOpen ? ' open' : '');
+
+    const header = document.createElement('div');
+    header.className = 'week-header';
+    header.innerHTML = `
+      <span class="chevron">▶</span>
+      <span class="week-title">Week ${week}</span>
+      <span class="week-dates">${formatDate(start)} – ${formatDate(end)}</span>
+      ${week === cw ? '<span class="week-badge">Current</span>' : ''}
+    `;
+    header.addEventListener('click', () => toggleWeek(week));
+    weekEl.appendChild(header);
+
+    const body = document.createElement('div');
+    body.className = 'week-body';
+
+    const coursesWithContent = sem.courses.filter(
+      (c) =>
+        c.readings.some((r) => r.week === week) ||
+        c.tasks.some((t) => t.week === week)
+    );
+
+    if (coursesWithContent.length === 0) {
+      body.innerHTML = '<div class="week-empty">No readings or tasks this week.</div>';
+    } else {
+      coursesWithContent.forEach((course) => {
+        body.appendChild(renderCourseCard(course, week));
+      });
+    }
+
+    weekEl.appendChild(body);
+    root.appendChild(weekEl);
+  }
+}
+
+function toggleWeek(week) {
+  if (state.openWeeks.has(week)) state.openWeeks.delete(week);
+  else state.openWeeks.add(week);
+  renderPlanner();
+}
+
+function renderCourseCard(course, week) {
+  const card = document.createElement('div');
+  card.className = 'course-card';
+  card.style.borderLeftColor = course.color;
+
+  const title = document.createElement('h4');
+  title.textContent = course.name;
+  title.style.color = course.color;
+  card.appendChild(title);
+
+  const readings = course.readings.filter((r) => r.week === week);
+  const tasks = course.tasks.filter((t) => t.week === week);
+
+  if (readings.length) {
+    card.appendChild(sectionTitle('Readings'));
+    card.appendChild(renderItemList(readings, 'reading'));
+  }
+  if (tasks.length) {
+    card.appendChild(sectionTitle('Tasks'));
+    card.appendChild(renderItemList(tasks, 'task'));
+  }
+
+  return card;
+}
+
+function sectionTitle(text) {
+  const el = document.createElement('p');
+  el.className = 'card-section-title';
+  el.textContent = text;
+  return el;
+}
+
+function renderItemList(items, type) {
+  const ul = document.createElement('ul');
+  ul.className = 'item-list';
+  items.forEach((item) => {
+    const li = document.createElement('li');
+    li.className = 'item';
+
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'item-title';
+    titleSpan.textContent = item.title;
+    li.appendChild(titleSpan);
+
+    if (type === 'task' && item.dueDate) {
+      const due = document.createElement('span');
+      due.className = 'item-due';
+      due.textContent = 'due ' + item.dueDate;
+      li.appendChild(due);
+    }
+
+    const badge = document.createElement('button');
+    badge.className = 'badge ' + item.status.replace(/\s+/g, '');
+    badge.textContent = item.status;
+    li.appendChild(badge);
+
+    ul.appendChild(li);
+  });
+  return ul;
+}
 
 // ---------------------------------------------------------------------------
 // Init
