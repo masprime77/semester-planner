@@ -7,6 +7,7 @@ there's no database and no server. The UI is vanilla JS in an
 [Electron](https://www.electronjs.org/) window; the Electron main process reads
 and writes the JSON files directly via Node.js.
 
+![CI](https://github.com/masprime77/semester-planner/actions/workflows/ci.yml/badge.svg)
 ![Vanilla JS](https://img.shields.io/badge/frontend-vanilla%20JS-yellow)
 ![Electron](https://img.shields.io/badge/runtime-electron-47848F)
 ![macOS](https://img.shields.io/badge/platform-macOS-lightgrey)
@@ -53,6 +54,31 @@ with DevTools open. You can also double-click **`start.command`** in Finder to
 run the app from source without a terminal.
 
 In development the app reads and writes the project's own `semesters/` folder.
+
+## Testing
+
+The core logic is extracted into `lib/` (pure, DOM-free modules) and tested with
+[Vitest](https://vitest.dev/):
+
+```bash
+npm test            # run the suite once
+npm run test:watch  # watch mode
+npm run test:coverage   # run with a V8 coverage report (written to coverage/)
+```
+
+- **Unit tests** (`tests/unit/`) cover status cycling, progress calculation,
+  course CRUD, and the filesystem store.
+- **Integration tests** (`tests/integration/`) drive the IPC handlers through a
+  mock `ipcMain` against a temp directory.
+- Coverage thresholds are enforced at **70% lines** and **70% functions**
+  (see `vitest.config.mjs`); the run fails if they aren't met.
+
+CI runs the suite on **macOS** and **Ubuntu** (Node 20) on every push and on
+pull requests to `main`, and uploads the coverage report as an artifact. A
+release is only built once CI passes — see
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) and
+[`release.yml`](.github/workflows/release.yml). Feature-to-test traceability
+lives in [`docs/USER_STORIES.md`](docs/USER_STORIES.md).
 
 ## Build for distribution
 
