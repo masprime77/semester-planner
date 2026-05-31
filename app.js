@@ -33,6 +33,15 @@ function persist() {
 
 const uid = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
+// Status cycles
+const READING_CYCLE = ['pending', 'seen', 'summarized', 'studied'];
+const TASK_CYCLE = ['not done', 'done', 'reviewed'];
+
+function nextStatus(cycle, current) {
+  const i = cycle.indexOf(current);
+  return cycle[(i + 1) % cycle.length];
+}
+
 // ---------------------------------------------------------------------------
 // Week / date helpers
 // ---------------------------------------------------------------------------
@@ -203,6 +212,13 @@ function renderItemList(items, type) {
     const badge = document.createElement('button');
     badge.className = 'badge ' + item.status.replace(/\s+/g, '');
     badge.textContent = item.status;
+    badge.title = 'Click to change status';
+    badge.addEventListener('click', () => {
+      const cycle = type === 'reading' ? READING_CYCLE : TASK_CYCLE;
+      item.status = nextStatus(cycle, item.status);
+      persist();
+      render();
+    });
     li.appendChild(badge);
 
     ul.appendChild(li);
