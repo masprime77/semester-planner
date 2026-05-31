@@ -1,0 +1,19 @@
+{
+  "name": "semester-planner",
+  "version": "1.0.0",
+  "description": "A minimal semester planner web app backed by JSON files",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "semester",
+    "planner",
+    "university",
+    "study"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
