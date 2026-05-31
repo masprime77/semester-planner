@@ -99,7 +99,56 @@ function render() {
   renderPlanner();
 }
 
-function renderDashboard() {}
+// ---------------------------------------------------------------------------
+// Dashboard: per-course progress + current week indicator
+// ---------------------------------------------------------------------------
+function courseProgress(course) {
+  const total = course.readings.length + course.tasks.length;
+  if (total === 0) return 0;
+  const doneReadings = course.readings.filter((r) => r.status === 'studied').length;
+  const doneTasks = course.tasks.filter(
+    (t) => t.status === 'done' || t.status === 'reviewed'
+  ).length;
+  return Math.round(((doneReadings + doneTasks) / total) * 100);
+}
+
+function renderDashboard() {
+  const sem = state.semester;
+  const root = document.getElementById('dashboard');
+  const cw = currentWeek(sem);
+
+  const heading = `<h2>${sem.name}</h2>`;
+  const weekLine = cw
+    ? `<div class="current-week">Current week: <strong>Week ${cw}</strong> of ${sem.weeks}</div>`
+    : `<div class="current-week">Semester not currently in session (${sem.weeks} weeks total)</div>`;
+
+  let bars = '';
+  if (sem.courses.length === 0) {
+    bars = '<div class="week-empty">No courses yet. Add one via “New Semester”.</div>';
+  } else {
+    sem.courses.forEach((course) => {
+      const pct = courseProgress(course);
+      bars += `
+        <div class="progress-row">
+          <div class="progress-label">
+            <span>${escapeHtml(course.name)}</span>
+            <span>${pct}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${pct}%;background:${course.color}"></div>
+          </div>
+        </div>`;
+    });
+  }
+
+  root.innerHTML = heading + weekLine + bars;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Planner: collapsible weeks, one course card per week
