@@ -2,11 +2,33 @@ const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
-const SEMESTERS_DIR = path.join(__dirname, 'semesters');
+// Where semester JSON files live:
+//   - development: the project's /semesters folder
+//   - production:  <userData>/semesters, so user data persists across app
+//     updates (~/Library/Application Support/Semester Planner/semesters on macOS)
+const SEMESTERS_DIR = app.isPackaged
+  ? path.join(app.getPath('userData'), 'semesters')
+  : path.join(__dirname, 'semesters');
 
 // Reject ids that could escape the semesters directory.
 const safeId = (id) => typeof id === 'string' && /^[a-zA-Z0-9_-]+$/.test(id);
 const fileFor = (id) => path.join(SEMESTERS_DIR, `${id}.json`);
+
+// Ensure the semesters directory exists. In production, seed it from the
+// bundled example.json on first launch (when the folder is empty).
+function ensureSemestersDir() {
+  fs.mkdirSync(SEMESTERS_DIR, { recursive: true });
+  if (!app.isPackaged) return;
+
+  const hasData = fs.readdirSync(SEMESTERS_DIR).some((f) => f.endsWith('.json'));
+  if (hasData) return;
+
+  // extraResources places the bundled folder at <resources>/semesters.
+  const bundledExample = path.join(process.resourcesPath, 'semesters', 'example.json');
+  if (fs.existsSync(bundledExample)) {
+    fs.copyFileSync(bundledExample, path.join(SEMESTERS_DIR, 'example.json'));
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Window
@@ -63,6 +85,8 @@ ipcMain.handle('delete-semester', (event, id) => {
 // App lifecycle
 // ---------------------------------------------------------------------------
 app.whenReady().then(() => {
+  ensureSemestersDir();
+
   // Hide the default menu bar on macOS.
   if (process.platform === 'darwin') Menu.setApplicationMenu(null);
 
