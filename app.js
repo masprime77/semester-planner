@@ -373,6 +373,105 @@ async function init() {
   document.getElementById('semester-select').addEventListener('change', (e) => {
     loadSemester(e.target.value);
   });
+
+  setupModal();
+}
+
+// ---------------------------------------------------------------------------
+// New semester modal
+// ---------------------------------------------------------------------------
+const DEFAULT_COLORS = ['#4A90D9', '#E2725B', '#7E57C2', '#5CB85C', '#F0AD4E', '#5BC0DE'];
+
+function setupModal() {
+  const overlay = document.getElementById('modal-overlay');
+  const openBtn = document.getElementById('new-semester-btn');
+  const cancelBtn = document.getElementById('modal-cancel');
+  const addCourseBtn = document.getElementById('ns-add-course');
+  const form = document.getElementById('new-semester-form');
+
+  const open = () => {
+    form.reset();
+    const courses = document.getElementById('ns-courses');
+    courses.innerHTML = '';
+    addCourseField(); // start with one course row
+    overlay.classList.remove('hidden');
+  };
+  const close = () => overlay.classList.add('hidden');
+
+  openBtn.addEventListener('click', open);
+  cancelBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+  addCourseBtn.addEventListener('click', addCourseField);
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    createSemester();
+    close();
+  });
+}
+
+function addCourseField() {
+  const container = document.getElementById('ns-courses');
+  const idx = container.children.length;
+  const row = document.createElement('div');
+  row.className = 'ns-course-row';
+
+  const name = document.createElement('input');
+  name.type = 'text';
+  name.placeholder = 'Course name';
+  name.className = 'ns-course-name';
+
+  const color = document.createElement('input');
+  color.type = 'color';
+  color.value = DEFAULT_COLORS[idx % DEFAULT_COLORS.length];
+  color.className = 'ns-course-color';
+
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'icon-btn';
+  remove.textContent = '✕';
+  remove.addEventListener('click', () => row.remove());
+
+  row.appendChild(name);
+  row.appendChild(color);
+  row.appendChild(remove);
+  container.appendChild(row);
+}
+
+function slugify(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'semester';
+}
+
+async function createSemester() {
+  const name = document.getElementById('ns-name').value.trim();
+  const startDate = document.getElementById('ns-start').value;
+  const weeks = parseInt(document.getElementById('ns-weeks').value, 10) || 15;
+
+  const courses = [];
+  document.querySelectorAll('#ns-courses .ns-course-row').forEach((row, i) => {
+    const cname = row.querySelector('.ns-course-name').value.trim();
+    if (!cname) return;
+    courses.push({
+      id: uid('course'),
+      name: cname,
+      color: row.querySelector('.ns-course-color').value,
+      readings: [],
+      tasks: [],
+    });
+  });
+
+  // Build a unique id from the name.
+  const existing = await api.list();
+  const ids = new Set(existing.map((s) => s.id));
+  let id = slugify(name);
+  let n = 2;
+  while (ids.has(id)) id = `${slugify(name)}-${n++}`;
+
+  const semester = { id, name, startDate, weeks, courses };
+  await api.save(id, semester);
+  await populateSelector();
+  await loadSemester(id);
 }
 
 init();
