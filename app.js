@@ -30,7 +30,8 @@ function persist() {
   saveTimer = setTimeout(() => api.save(state.semesterId, state.semester), 250);
 }
 
-const uid = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+// Shared pure logic, loaded from lib/planner-core.js before this script.
+const { READING_CYCLE, TASK_CYCLE, nextStatus, courseProgress, uid } = window.PlannerCore;
 
 // ---------------------------------------------------------------------------
 // Tabler icons (inline SVG — no external dependency, works offline)
@@ -57,15 +58,6 @@ const ICONS = {
 
 function icon(name) {
   return `<svg class="ti" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`;
-}
-
-// Status cycles
-const READING_CYCLE = ['pending', 'seen', 'summarized', 'studied'];
-const TASK_CYCLE = ['not done', 'done', 'reviewed'];
-
-function nextStatus(cycle, current) {
-  const i = cycle.indexOf(current);
-  return cycle[(i + 1) % cycle.length];
 }
 
 // ---------------------------------------------------------------------------
@@ -128,17 +120,8 @@ function render() {
 
 // ---------------------------------------------------------------------------
 // Dashboard: per-course progress + current week indicator
+// (courseProgress comes from lib/planner-core.js)
 // ---------------------------------------------------------------------------
-function courseProgress(course) {
-  const total = course.readings.length + course.tasks.length;
-  if (total === 0) return 0;
-  const doneReadings = course.readings.filter((r) => r.status === 'studied').length;
-  const doneTasks = course.tasks.filter(
-    (t) => t.status === 'done' || t.status === 'reviewed'
-  ).length;
-  return Math.round(((doneReadings + doneTasks) / total) * 100);
-}
-
 function renderDashboard() {
   const sem = state.semester;
   const root = document.getElementById('dashboard');

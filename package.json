@@ -6,7 +6,10 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev-tools",
-    "build:mac": "electron-builder --mac"
+    "build:mac": "electron-builder --mac",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "semester",
@@ -17,8 +20,10 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.9",
     "electron": "^31.0.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "vitest": "^2.1.9"
   },
   "build": {
     "appId": "com.tu-usuario.semester-planner",
@@ -33,6 +38,7 @@
       "index.html",
       "app.js",
       "style.css",
+      "lib/",
       "semesters/"
     ],
     "extraResources": [
