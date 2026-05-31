@@ -12,18 +12,14 @@ const state = {
 };
 
 // ---------------------------------------------------------------------------
-// API helpers
+// API helpers — backed by the Electron preload bridge (window.planner),
+// which forwards to the main process over IPC. No HTTP server involved.
 // ---------------------------------------------------------------------------
 const api = {
-  list: () => fetch('/api/semesters').then((r) => r.json()),
-  load: (id) => fetch(`/api/semesters/${id}`).then((r) => r.json()),
-  save: (id, data) =>
-    fetch(`/api/semesters/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    }).then((r) => r.json()),
-  remove: (id) => fetch(`/api/semesters/${id}`, { method: 'DELETE' }).then((r) => r.json()),
+  list: () => window.planner.listSemesters(),
+  load: (id) => window.planner.getSemester(id),
+  save: (id, data) => window.planner.saveSemester(id, data),
+  remove: (id) => window.planner.deleteSemester(id),
 };
 
 // Persist the current semester, then re-render.
