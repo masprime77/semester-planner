@@ -33,6 +33,27 @@ function persist() {
 
 const uid = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
+// ---------------------------------------------------------------------------
+// Tabler icons (inline SVG — no external dependency, works offline)
+// ---------------------------------------------------------------------------
+const ICONS = {
+  'chevron-right': '<path d="M9 6l6 6l-6 6" />',
+  x: '<path d="M18 6l-12 12" /><path d="M6 6l12 12" />',
+  pencil:
+    '<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" /><path d="M13.5 6.5l4 4" />',
+  trash:
+    '<path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />',
+  plus: '<path d="M12 5l0 14" /><path d="M5 12l14 0" />',
+  calendar:
+    '<path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" /><path d="M16 3l0 4" /><path d="M8 3l0 4" /><path d="M4 11l16 0" />',
+  columns:
+    '<path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" /><path d="M12 4l0 16" />',
+};
+
+function icon(name) {
+  return `<svg class="ti" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`;
+}
+
 // Status cycles
 const READING_CYCLE = ['pending', 'seen', 'summarized', 'studied'];
 const TASK_CYCLE = ['not done', 'done', 'reviewed'];
@@ -171,7 +192,7 @@ function renderPlanner() {
     const header = document.createElement('div');
     header.className = 'week-header';
     header.innerHTML = `
-      <span class="chevron">▶</span>
+      <span class="chevron">${icon('chevron-right')}</span>
       <span class="week-title">Week ${week}</span>
       <span class="week-dates">${formatDate(start)} – ${formatDate(end)}</span>
       ${week === cw ? '<span class="week-badge">Current</span>' : ''}
@@ -276,7 +297,7 @@ function renderItemList(items, type, course, week) {
 
     const del = document.createElement('button');
     del.className = 'icon-btn';
-    del.textContent = '✕';
+    del.innerHTML = icon('x');
     del.title = 'Delete';
     del.addEventListener('click', () => {
       const arr = type === 'reading' ? course.readings : course.tasks;
@@ -430,7 +451,8 @@ function addCourseField() {
   const remove = document.createElement('button');
   remove.type = 'button';
   remove.className = 'icon-btn';
-  remove.textContent = '✕';
+  remove.innerHTML = icon('x');
+  remove.title = 'Remove course';
   remove.addEventListener('click', () => row.remove());
 
   row.appendChild(name);

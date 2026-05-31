@@ -1,4 +1,4 @@
-# 📚 Semester Planner
+# Semester Planner
 
 A minimal, framework-free web app for planning a university semester. Track
 readings and tasks per course, per week, with click-to-cycle status badges and

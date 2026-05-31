@@ -73,6 +73,18 @@ body {
 .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
 .btn-primary:hover { background: #3a7bc0; }
 .btn-small { padding: 0.25rem 0.55rem; font-size: 0.8rem; }
+.btn-icon-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Tabler icons */
+.ti {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
 .btn-danger { color: #c0392b; border: none; background: none; }
 .btn-danger:hover { background: #fdecea; }
 
@@ -128,7 +140,13 @@ body {
   user-select: none;
 }
 .week-header:hover { background: #fafbfc; }
-.week-header .chevron { transition: transform 0.2s; color: var(--muted); }
+.week-header .chevron {
+  transition: transform 0.2s;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+}
+.week-header .chevron .ti { width: 18px; height: 18px; }
 .week.open .week-header .chevron { transform: rotate(90deg); }
 .week-title { font-weight: 600; font-size: 0.95rem; }
 .week-dates { color: var(--muted); font-size: 0.8rem; }
@@ -202,6 +220,7 @@ body {
   border-radius: 4px;
 }
 .icon-btn:hover { background: #f0f2f5; color: var(--text); }
+.icon-btn .ti { width: 16px; height: 16px; }
 
 .add-row {
   display: flex;
